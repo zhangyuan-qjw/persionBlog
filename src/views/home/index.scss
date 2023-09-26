@@ -1,0 +1,20 @@
+header {
+    height: 3.2rem;
+    width: 100%;
+    background-color: black;
+    position: fixed;
+    top: 0;
+
+    .iconfont {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+        font-size: 1.5rem;
+        color: white;
+
+        &:hover {
+            font-size: 1.6rem;
+            cursor: pointer;
+        }
+    }
+}
