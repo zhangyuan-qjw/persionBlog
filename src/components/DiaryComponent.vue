@@ -6,12 +6,13 @@
             <div class="briefly" v-html="getFirstParagraph(item.content)"></div>
             <div class="time">{{ store.formatTime(item.pub_time) }}</div>
         </div>
-        <div class="page_button" @click="nextPage">→</div>
+        <div class="page_button" @click="nextPage" v-show="isNext">→</div>
         <div class="page_last" v-show="store.albinism_article_page > 1" @click="lastPage">←</div>
     </div>
 </template>
 
 <script lang="ts" setup>
+import { ref } from "vue"
 import { useStore } from "@/store/index"
 import { get } from "@/utils/api"
 
@@ -20,6 +21,11 @@ const store = useStore();
 const props = defineProps({
     diaryOpen: Boolean
 });
+
+const isNext = ref(false)
+setTimeout(()=>{
+    isNext.value = true    
+}, 500)
 
 const emits = defineEmits(['update:diaryOpen']);
 
@@ -63,28 +69,31 @@ function getFirstParagraph(content: string) {
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    // background-color: aqua;
+    position: relative;
 
     .box {
         width: 80%;
-        height: 80%;
+        height: 5rem;
         border-radius: 10px;
         box-shadow: 0 0 10px #ccc;
         padding: 20px;
-        margin: 20px;
+        margin: 10px;
+
 
         .title {
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .briefly {
+            height: 2.9rem;
             font-size: 0.9rem;
             line-height: 1.5;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            // background-color: aqua;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .time {
@@ -100,7 +109,7 @@ function getFirstParagraph(content: string) {
     }
 
     .page_button {
-        width: 30%;
+        width: 37%;
         height: 50px;
         text-align: center;
         line-height: 50px;
@@ -119,7 +128,7 @@ function getFirstParagraph(content: string) {
     }
 
     .page_last {
-        width: 30%;
+        width:37%;
         height: 50px;
         text-align: center;
         line-height: 50px;
@@ -137,6 +146,8 @@ function getFirstParagraph(content: string) {
         }
     }
 }
+
+// }
 
 //移动端适配
 @media screen and (max-width: 768px) {

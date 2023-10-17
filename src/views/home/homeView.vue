@@ -11,7 +11,6 @@
 
 <script lang="ts" setup>
 import cardView from "./homepart/cardView.vue"
-// import talkAI from "./homepart/addView.vue";
 import chatSearch from "./homepart/chatSearch.vue";
 
 defineProps({

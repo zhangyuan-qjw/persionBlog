@@ -4,7 +4,7 @@
         <div class="role-status">
             <router-link to="/albinism">白化</router-link>
             <router-link to="/boring">章远</router-link>
-            <router-link to="/boring">陈宇昂</router-link>
+            <router-link to="/boring">陈羽昂</router-link>
             <router-link to="/boring">你</router-link>
             <router-link to="/boring">我</router-link>
         </div>

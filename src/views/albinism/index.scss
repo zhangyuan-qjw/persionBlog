@@ -21,16 +21,7 @@ header {
         display: none;
     }
 
-    .now_time {
-        position: absolute;
-        right: 0.5rem;
-        bottom: 0.2rem;
-        // font-weight: 400;
-        font-size: small;
-        color: #8e8e8e;
-        cursor: pointer;
-    }
-    .role{
+    .role {
         cursor: pointer;
     }
 }
@@ -40,7 +31,6 @@ section {
     height: calc(100vh - 6rem);
     width: 80%;
     display: flex;
-    // background-color: #ccc;
     margin: 0 auto;
 
     .side {
@@ -73,19 +63,33 @@ section {
     .content {
         width: 82%;
         height: 100%;
-        // background-color: #ccc;
         overflow: auto;
 
         &::-webkit-scrollbar {
             display: none;
         }
+
+        //滚动条平滑滚动
+        scroll-behavior: smooth;
+    }
+
+    .back-head {
+        position: fixed;
+        bottom: 80px;
+        right: 50px;
+        cursor: pointer;
+        height: 30px;
+        width: 30px;
+        background-color: #ccc;
+        text-align: center;
+        line-height: 30px;
+        border-radius: 50%;
     }
 }
 
 .activate {
     color: black;
     font-weight: 700;
-    // font-size: medium;
 }
 
 //媒体查询
@@ -130,6 +134,11 @@ section {
 
         .content {
             width: 85%;
+        }
+
+        .back-head {
+            right: 10px;
+            bottom: 90px;
         }
     }
 }

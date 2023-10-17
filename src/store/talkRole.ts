@@ -6,7 +6,7 @@ export interface message_type {
     role: string,
     message: string,
     time: string,
-    record?:string,
+    record?: string,
 }
 
 interface talkRecord_type {
@@ -19,12 +19,11 @@ interface talkRecord_type {
 export const useTalkRoleStore = defineStore("talkRole", {
     state: () => ({
         talkHistory: [
-            // { id: 2121212, title: '你好', data: '2023-10-1 09:29' },
-            // { id: 2121212, title: '你好', data: '2023-10-1 09:29' },
-            // { id: 2121212, title: '你好', data: '2023-10-1 09:29' }
         ] as talkRecord_type[],
         messages: [
         ] as message_type[],
+        chatRole: '邱',
+        isChat:true,
     }),
     actions: {
         setmessages(message: message_type) {
@@ -36,5 +35,11 @@ export const useTalkRoleStore = defineStore("talkRole", {
         setTalkHistory(talkHistory: talkRecord_type[]) {
             this.talkHistory = talkHistory;
         },
+        changeRole(role: string){
+            this.chatRole = role;
+        },
+        changeChat(isChat: boolean){
+            this.isChat = isChat;
+        }
     },
 });

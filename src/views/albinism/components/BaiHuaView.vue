@@ -2,18 +2,22 @@
     <div class="card" v-for="item, key in BaiHua" :key="key" @click="DialogueShow">
         <img :src="`${url}media/${item.image}`" alt="">
         <div class="dialogue">
-            <p style="text-align: start;" v-for="message in item.messages" :key="message.record">
+            <p style="text-align: start;" v-for="message, index in item.messages" :key="index">
                 <strong>{{ message.role }}</strong>
                 {{ ':' + message.message }}
             </p>
         </div>
         <div class="creat_time">{{ formatDate(item.data) }}</div>
     </div>
+    <div class="bottom">
+        <div class="previous" @click="changePage(-1)" v-show="page_number != 1">上一页</div>
+        <div class="next" @click="changePage(1)" v-show="isNext">下一页</div>
+    </div>
     <GlobalDialog :Dialog="isDialog">{{ DialogText }}</GlobalDialog>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue"
+import { ref, onMounted, inject } from "vue"
 import { get } from "@/utils/api";
 import GlobalDialog from "@/components/GlobalDialog.vue";
 import { message_type } from "@/store/talkRole";
@@ -32,19 +36,35 @@ const isDialog = ref(false)
 const DialogText = ref('')
 
 const BaiHua = ref<BaiHua_type[]>([])
+const page_number = ref(0)
+
+const isNext = ref(false)
 
 onMounted(async () => {
-    const res = await get('all_record/')
+    changePage(1)
+})
+
+const changePage = async (num: number) => {
+    isNext.value = false
+    page_number.value += num
+    const res = await get('all_record/', {
+        page: page_number.value
+    })
     if (res.code == 200) {
         BaiHua.value = res.data
+        if (handleBackTop) {
+            handleBackTop();
+        }
+        isNext.value = true
     } else {
+        page_number.value -= 1
         isDialog.value = true
         DialogText.value = res.msg
         setTimeout(() => {
             isDialog.value = false
         }, 1000)
     }
-})
+}
 
 const DialogueShow = (event: any) => {
     const dialogue = event.currentTarget.querySelector('.dialogue') as HTMLElement
@@ -57,6 +77,8 @@ const formatDate = (time: string) => {
     return date.toLocaleString()
 }
 
+//导入父组件的方法
+const handleBackTop = inject<() => void>('handleBackTop');
 
 </script>
 
@@ -93,6 +115,41 @@ const formatDate = (time: string) => {
         left: 0;
         font-weight: 300;
         font-size: small;
+    }
+}
+
+.bottom {
+    width: 100%;
+    position: relative;
+
+    .previous {
+        position: absolute;
+        left: 0;
+        height: 25px;
+        width: 60px;
+        background-color: black;
+        color: white;
+        border-radius: 10px;
+        text-align: center;
+        line-height: 25px;
+        font-size: xx-small;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .next {
+        position: absolute;
+        right: 0;
+        height: 25px;
+        width: 60px;
+        background-color: black;
+        color: white;
+        border-radius: 10px;
+        text-align: center;
+        line-height: 25px;
+        font-size: xx-small;
+        font-weight: 600;
+        cursor: pointer;
     }
 }
 

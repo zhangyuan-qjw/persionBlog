@@ -5,7 +5,6 @@
         </div>
         <div class="role" @click="addArticle">白化</div>
         <div class="back" @click="handleBack">←</div>
-        <div class="now_time">2023年7月</div>
     </header>
     <section>
         <div class="side" :class="{ translate: isTranslate }" ref="side">
@@ -15,7 +14,7 @@
                 </li>
             </ul>
         </div>
-        <div class="content">
+        <div class="content" ref="content">
             <router-view v-slot="{ Component }">
                 <transition name="fade" mode="out-in">
                     <div :key="router.path">
@@ -24,11 +23,12 @@
                 </transition>
             </router-view>
         </div>
+        <div class="back-head" @click="handleBackTop" v-if="isShowBackTop">▲</div>
     </section>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, provide } from 'vue'
 import { routers } from '@/routers/index'
 import { useRoute } from "vue-router"
 
@@ -76,20 +76,48 @@ const handleClickOutside = (e: any) => {
         isTranslate.value = false
     }
 }
+
 onMounted(() => {
     document.addEventListener('click', handleClickOutside)
+    if (content.value) {
+        content.value.addEventListener('scroll', handleScroll);
+    }
 })
 onBeforeUnmount(() => {
     document.removeEventListener('click', handleClickOutside)
+    if (content.value) {
+        content.value.removeEventListener('scroll', handleScroll);
+    }
 })
 
 //添加文章
 const addArticle = () => {
-    if (router.path == '/albinism/diary'){
+    if (router.path == '/albinism/diary') {
         routers.push('/baiHuaAddArticle')
     }
 }
 
+const content = ref<HTMLElement>()
+// content元素滚动条返回顶部
+function handleBackTop() {
+    if (content.value) {
+        content.value.scrollTo(0, 0)
+    }
+}
+
+//导出父组件的方法
+provide('handleBackTop', handleBackTop);
+
+// 返回顶部按钮的显示与隐藏
+const isShowBackTop = ref(false)
+function handleScroll(event: any) {
+    const scrollTop = event.target.scrollTop;
+    if (scrollTop > 800) {
+        isShowBackTop.value = true;
+    } else {
+        isShowBackTop.value = false;
+    }
+}
 </script>
 
 

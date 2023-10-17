@@ -3,14 +3,14 @@
         <div contenteditable="true" class="text" @focus="focus" @blur="blur" @input="handleInput" @keydown.enter="send">{{
             textInput }}</div>
         <span class="role" @click="changeRole">
-            {{ chatRole }}
+            {{ Role(chatRole) }}
         </span>
         <i class="iconfont icon-fasong" @click="send"></i>
     </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, watch, computed, onBeforeUnmount, onMounted } from 'vue';
 import { useTalkRoleStore } from '@/store/talkRole';
 import { useRoute } from 'vue-router';
 import { routers } from '@/routers';
@@ -18,23 +18,51 @@ import { routers } from '@/routers';
 const talkRoleStore = useTalkRoleStore();
 const route = useRoute();
 
+const props = defineProps({
+    scrollToBottom: {
+        type: Function,
+        required: false
+    }
+})
+
 const textInput = ref('对话...');
 
 const chatRole = ref('邱');
 
+onMounted(() => {
+    window.addEventListener('keydown', keydownHandler);
+})
+
+onBeforeUnmount(() => {
+    window.removeEventListener('keydown', keydownHandler)
+})
+const Role = computed(() => (newRole: string) => {
+    if (talkRoleStore.isChat) {
+        return newRole
+    }
+    chatRole.value = talkRoleStore.chatRole
+    return talkRoleStore.chatRole
+})
+
+//监听textInput
+watch(() => textInput.value, (newText) => {
+    if (newText === '对话...') {
+        textInput.value = '';
+    }
+})
+
 const roles = ['邱', '白', '章', '陈', '你', '我']
 
 //全局监听键盘事件
-window.addEventListener('keydown', (event) => {
-    //阻止浏览器默认事件
+function keydownHandler(event) {
     if (event.key === 'Tab') {
         event.preventDefault();
         changeRole();
     }
     if (event.ctrlKey) {
-        chatRole.value = '邱'
+        chatRole.value = '邱';
     }
-});
+}
 
 function blur() {
     if (textInput.value === '') {
@@ -55,9 +83,10 @@ function handleInput(event: any) {
 
 const send = (event: any) => {
     //阻止空消息发送
-    if (textInput.value === '对话...' || textInput.value === '') {
+    if (textInput.value === '对话...' || textInput.value.trim() === '') {
         return;
     }
+    if (props.scrollToBottom) props.scrollToBottom()
     //阻止默认事件
     event?.preventDefault();
     chat()
@@ -93,6 +122,7 @@ const chat = () => {
 
 const changeRole = () => {
     //每次changeRole都会切换到下一个角色
+    talkRoleStore.changeChat(true)
     const index = roles.indexOf(chatRole.value)
     if (index === 5) {
         chatRole.value = roles[0];

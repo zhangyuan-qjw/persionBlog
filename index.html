@@ -1,14 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml"/>
-    <link rel="stylesheet" href="//at.alicdn.com/t/c/font_4224807_52ieoygxzm8.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + Vue + TS</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="shortcut icon" id="favicon" type="image/x-icon">
+  <link rel="stylesheet" href="//at.alicdn.com/t/c/font_4224807_52ieoygxzm8.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zhang远</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+<script>
+  //随机生成1到24的整数
+  const randomNumber = Math.floor(Math.random() * 24) + 1;
+  // 获取<link>标签元素
+  var favicon = document.getElementById('favicon');
+  // 新的动态链接
+  var dynamicURL = `/blog_icon/SVG/Smiley-${randomNumber}.svg`;
+  // 设置<link>标签的href属性为动态链接
+  favicon.href = dynamicURL;
+</script>
+
 </html>

@@ -11,27 +11,26 @@
             <div class="box save" @click="openSave">保存</div>
         </div>
     </div>
-    <div class="chat" ref="scrollEle">
+    <div class="chat" ref="chatBox">
         <div :class="message.role === '邱' ? 'user' : 'role'" v-for="message in talkRoleStore.messages" :key="message.time">
-            <div class="head" v-show="message.role !== '邱'">{{ message.role }}</div>
+            <div class="head" v-show="message.role !== '邱'" @click="changeRole">{{ message.role }}</div>
             <div class="message">{{ message.message }}</div>
-            <div class="head" v-show="message.role === '邱'">{{ message.role }}</div>
+            <div class="head" v-show="message.role === '邱'" @click="changeRole">{{ message.role }}</div>
         </div>
     </div>
     <div class="chat_input">
-        <chatSearch></chatSearch>
+        <chatSearch :scrollToBottom="scrollToBottom"></chatSearch>
     </div>
     <div class="history-box" v-show="isHistory" @click="handleClickNone">
         <div class="history-content">
             <i class="iconfont icon-cuowu"></i>
             <div class="history-item" v-for="item, index in talkRoleStore.talkHistory" :key="index"
-                @click="handleHistory(item.id)">
+                @click="handleHistory(item.id, item.title)">
                 <div class="title">{{ item.title }}</div>
                 <div class="date">{{ date(item.data) }}</div>
             </div>
         </div>
     </div>
-    <!-- 弹框内容 -->
     <div class="modal" v-show="isSave">
         <h2>{{ title }}</h2>
         <p>这里需要选择上传的图片</p>
@@ -64,11 +63,22 @@ const talkRoleStore = useTalkRoleStore();
 
 const title = ref('')
 onMounted(() => {
+    //初始化当前页面一些默认数据
     if (talkRoleStore.messages[0]) {
         title.value = talkRoleStore.messages[0].message
     } else {
         routers.push('/')
     }
+    //监听titleox
+    addisOPenTitle()
+})
+
+onBeforeUnmount(() => {
+    if (localStorage.getItem('chat')) {
+        localStorage.removeItem('chat')
+    }
+    //移除一些监听器
+    removeisOPenTitle()
 })
 
 function date(data: string) {
@@ -79,20 +89,18 @@ function date(data: string) {
 }
 
 const isTitleBox = ref(false)
-onMounted(() => {
-    document.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        if (isTitleBox.value && target.className !== 'title-box' && target.className !== 'title' && target.className !== 'iconfont icon-a-xiala2') {
-            isTitleBox.value = false;
-        }
-    })
-})
-
-onBeforeUnmount(() => {
-    if (localStorage.getItem('chat')) {
-        localStorage.removeItem('chat')
+function isOPenTitle(e) {
+    const target = e.target as HTMLElement;
+    if (isTitleBox.value && target.className !== 'title-box' && target.className !== 'title' && target.className !== 'iconfont icon-a-xiala2') {
+        isTitleBox.value = false;
     }
-})
+}
+function addisOPenTitle() {
+    document.addEventListener('click', isOPenTitle);
+}
+function removeisOPenTitle() {
+    document.removeEventListener('click', isOPenTitle);
+}
 
 function renameFile() {
     const originalName = prompt("请输入新的文件名:");
@@ -102,6 +110,7 @@ function renameFile() {
         alert(`文件已重命名为: ${originalName}`);
     }
 }
+
 const isHistory = ref(false)
 const handleClickHistory = () => {
     isHistory.value = true
@@ -122,7 +131,9 @@ const saveChat = async () => {
     const chat = localStorage.getItem('chat')
     let res = {} as any
     if (!chat) {
-        formData.append('image', uploadImage.value)
+        if (uploadImage.value) {
+            formData.append('image', uploadImage.value)
+        }
         formData.append('title', title.value)
         formData.append('messages', JSON.stringify(talkRoleStore.messages))
         res = await post('/fantasy/', formData, {
@@ -131,14 +142,17 @@ const saveChat = async () => {
             }
         })
     } else {
-         //这个messages需要过滤一下,根据是否拥有id来判断
-         const messages = talkRoleStore.messages.filter(item => !item.id)
-        const data_from = {
-            "id": chat,
-            "title": title.value,
-            "messages": messages
-        }
-        res = await post('/fantasy/', data_from)
+        //这个messages需要过滤一下,根据是否拥有id来判断
+        const messages = talkRoleStore.messages.filter(item => !item.id)
+        formData.append('image', uploadImage.value)
+        formData.append('title', title.value)
+        formData.append('id', JSON.stringify(chat))
+        formData.append('messages', JSON.stringify(messages))
+        res = await post('/fantasy/', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
     }
     if (res.code === 200) {
         isDialog.value = true
@@ -161,7 +175,6 @@ const saveChat = async () => {
 const getHistory = async () => {
     const res = await get('/record/')
     if (res.code == 200) {
-        console.log(res.data);
         talkRoleStore.setTalkHistory(res.data)
     } else {
         isDialog.value = true
@@ -172,11 +185,11 @@ const getHistory = async () => {
     }
 }
 
-const handleHistory = async (id: string | undefined) => {
+const handleHistory = async (id: string | undefined, new_title: string) => {
     const res = await get('/information/', { id: id })
     if (res.data && id) {
         talkRoleStore.setMessages(res.data)
-        title.value = talkRoleStore.messages[0].message
+        title.value = new_title
         localStorage.setItem('chat', id)
     }
 }
@@ -197,6 +210,23 @@ const preview = () => {
     }
 }
 
+//移动端点击头像功能
+const changeRole = (e: any) => {
+    talkRoleStore.changeChat(false)
+    talkRoleStore.changeRole(e.target.innerText)
+}
+
+//消息框自动滚动到底部
+const chatBox = ref<HTMLElement>()
+function scrollToBottom() {
+    setTimeout(() => {
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            left: 0,
+            behavior: 'smooth'
+        })
+    }, 100)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -299,6 +329,7 @@ const preview = () => {
             font-weight: 600;
             font-size: 0.9rem;
             margin-left: 10px;
+            cursor: pointer;
         }
     }
 
@@ -328,6 +359,7 @@ const preview = () => {
             font-weight: 600;
             font-size: 0.9rem;
             margin-right: 10px;
+            cursor: pointer;
         }
     }
 }
